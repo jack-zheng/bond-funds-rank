@@ -56,4 +56,5 @@ SyntaxError: Non-ASCII character '\xe4' in file rank.py on line 9, but no encodi
 在文件头部追加 `# -*- coding: utf-8 -*` 指定编码
 
 ## 进度记录
+day2: 1.5 hours, 删选基金信息
 day1: 2 hours, setup env, 完成部分信息爬取

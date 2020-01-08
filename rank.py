@@ -44,3 +44,41 @@ ret = requests.get(url.format(start_date, end_date, 100))
 
 # 正则匹配债券信息部分 'datas:' 到 ',allRecords' 之间的部分
 bonds = re.search(r'(\[.+\])', ret.text).group(1)
+'''
+这个 API 返回值中我想要的数据有：基金号，中文名，近三年总收益，成立时间，近一年收益，近第二年，近第三年收益
+
+字符串中各位置代表的意义：
+"003741,鹏华丰盈债券,PHFYZQ,2020-01-08,1.3580,1.4459,
+0：基金号， 1：中文名称，2：拼音首字母，3：当前时间，4：单位净值，5：累计净值
+------
+0.0074,-0.0589,0.6672,1.3055,2.3438,
+6：日增长，7：近一周，8：近一个月，9：近三个月，10：近六个月
+------
+35.7922,42.5302,47.3382,-0.0589,47.9570,2016-11-22,
+11：近一年，12：近两年，13：近三年，14：今年来，15：成立来，16：自定义，17：成立时间
+------
+1,35.8599,0.80%,0.08%,1,0.08%,1,"
+18：?, 19:看着像是估值，20：手续费，21：折后，22：打折，23，24貌似和前两个重复的
+
+eval(str) 把 str 转成 list
+'''
+bonds_list = eval(bonds)
+
+# 创建一个 Info 类来简化存储
+class BondInfo:
+    def __init__(self, infostr):
+        info = infostr.split(',')
+        self.originstr = infostr
+        self.id = info[0]
+        self.name = info[1]
+        #... 后面再补齐
+
+# 把 list 信息拆解成 id - info 的 dict 对象
+bonds_dict = {}
+for sub in bonds_list:
+    one_bond = sub.split(',')
+    id = one_bond[0]
+    bonds_dict[id] = BondInfo(sub)
+
+for k,v in bonds_dict.items():
+    print("id: %s, name: %s" % (k, v.name))
