@@ -24,6 +24,7 @@ http://fund.eastmoney.com/data/rankhandler.aspx?op=ph&dt=kf&ft=zq&rs=&gs=0&sc=3n
 
 http://fundf10.eastmoney.com/jjjl_206018.html
 ```
+
 ```url
 基金基本信息
 
@@ -46,15 +47,20 @@ http://fund.eastmoney.com/pingzhongdata/206018.js
 
 ## Issue Log
 
-运行脚本的时候跑错
+运行脚本的时候抛错
 
 ```txt
-jack@DESKTOP-9TGTFK1:~/gitStore/bond-funds-rank$ python rank.py 
+jack@DESKTOP-9TGTFK1:~/gitStore/bond-funds-rank$ python rank.py
   File "rank.py", line 8
 SyntaxError: Non-ASCII character '\xe4' in file rank.py on line 9, but no encoding declared; see http://python.org/dev/peps/pep-0263/ for details
 ```
+
 在文件头部追加 `# -*- coding: utf-8 -*` 指定编码
 
+使用正则匹配时默认使用的是贪婪模式，在匹配时添加 ? 比如： `\w+?` 就会把匹配转化成非贪婪模式
+
 ## 进度记录
+
+day3: 1.5 hours, 基本整合完基金经理信息，但是代码结构需要再调整一下
 day2: 1.5 hours, 删选基金信息
 day1: 2 hours, setup env, 完成部分信息爬取
