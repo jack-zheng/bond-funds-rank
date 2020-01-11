@@ -61,6 +61,7 @@ SyntaxError: Non-ASCII character '\xe4' in file rank.py on line 9, but no encodi
 
 ## 进度记录
 
+day4: 1 hours, 完成基本功能，剩下的就是如何让他更友好
 day3: 1.5 hours, 基本整合完基金经理信息，但是代码结构需要再调整一下
 day2: 1.5 hours, 删选基金信息
 day1: 2 hours, setup env, 完成部分信息爬取
