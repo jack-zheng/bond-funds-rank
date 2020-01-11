@@ -3,16 +3,27 @@ import re
 import requests
 from datetime import datetime, timedelta
 
+'''
+为了便于管理，对象属性中只存放 request 解析出来的原始值，再方法中进行类型转化，返回处理数据
+'''
+
 class ManagerInfo:
     def __init__(self, dict):
         self.name = dict['name']
         self.workTime = dict['workTime']
         self.fundSize = dict['fundSize']
         self.termEarn = dict['profit']['series'][0]['data'][0]['y']
-        self.fondAvg = dict['profit']['series'][0]['data'][1]['y']
+        self.fundAvg = dict['profit']['series'][0]['data'][1]['y']
+
+    def getWorkTime(self):
+        yearMatched = re.search(r'(\w+)年', self.workTime)
+        dayMatched = re.search(r'(\d+)天', self.workTime)
+        yearNum = 0 if yearMatched is None else int(yearMatched.group(1))
+        dayNum = 0 if yearMatched is None else int(dayMatched.group(1))
+        return timedelta(days=(yearNum*365+dayNum))
 
     def __str__(self):
-        return "Manager: %s, work time: %s" % (self.name, self.workTime)
+        return "Manager: %s, work time: %s, fond size: %s, term earn: %s, fund avg: %s" % (self.name, self.workTime, self.fundSize, self.termEarn, self.fundAvg)
 
 
 def getManager(code):
@@ -42,8 +53,12 @@ def getManager(code):
     return ManagerInfo(manager_dict)
 
 
-if __name__ == '__main__':
+def getBondsList(count):
     '''
+    删选出当前时间点的最佳纯债基金名单，只是初步删选，后续还要更具基金的管理细节再进行选优
+    @param: 删选基金的数量
+    @return: 删选出的基金 list
+
     URL:
     http://fund.eastmoney.com/data/rankhandler.aspx?op=ph&dt=kf&ft=zq&rs=&gs=0&sc=3nzf&st=desc&sd=2019-01-07&ed=2020-01-07&qdii=041|&tabSubtype=041,,,,,&pi=1&pn=50&dx=1&v=0.9225948918241171
 
@@ -80,7 +95,7 @@ if __name__ == '__main__':
     start_date = (today - timedelta(days=365)).strftime('%Y-%m-%d')
     end_date = today.strftime('%Y-%m-%d')
 
-    ret = requests.get(url.format(start_date, end_date, 1))
+    ret = requests.get(url.format(start_date, end_date, count))
 
     # 正则匹配债券信息部分 'datas:' 到 ',allRecords' 之间的部分
     bonds = re.search(r'(\[.+\])', ret.text).group(1)
@@ -102,39 +117,39 @@ if __name__ == '__main__':
 
     eval(str) 把 str 转成 list
     '''
-    bonds_list = eval(bonds)
+    return eval(bonds)
 
-    # 创建一个 Info 类来简化存储
-    class BondInfo:
-        def __init__(self, infostr):
-            info = infostr.split(',')
-            self.originstr = infostr
-            self.id = info[0]
-            self.name = info[1]
-            #... 后面再补齐
-        
-        def setManager(self, manager):
-            self.manager = manager
 
-        def __str__(self):
-            return "Code: %s, name: %s, manager:%s" % (self.id, self.name, self.manager.name)
+# 创建一个 Info 类来简化存储
+class BondInfo:
+    def __init__(self, infostr):
+        info = infostr.split(',')
+        self.originstr = infostr
+        self.id = info[0]
+        self.name = info[1]
+        self.earn3YTotal = info[13]
+        self.earn2YTotal = info[12]
+        self.earn1YTotal = info[11]
+        self.established = info[15]
+    
+    def setManager(self, manager):
+        self.manager = manager
+
+    def __str__(self):
+        return "Code: %s, name: %s, [1-3] earn/year: [%s, %s, %s], %s" % (self.id, self.name, self.earn1YTotal, self.earn2YTotal, self.earn3YTotal, self.manager)
+
+
+if __name__ == '__main__':
+    bonds_list = getBondsList(5)
 
     # 把 list 信息拆解成 id - info 的 dict 对象
-    # bonds_dict = {}
-    # for sub in bonds_list:
-    #     one_bond = sub.split(',')
-    #     code = one_bond[0]
-    #     bondinfo = BondInfo(sub)
-    #     bondinfo.setManager(getManager(code))
-    #     bonds_dict[code] = bondinfo
-
-    # for k,v in bonds_dict.items():
-    #     print("id: %s, name: %s, manager: %s" % (k, v.name, v.manager.name))
-    t = bonds_list[0]
-    one_bond = t.split(',')
-    code = one_bond[0]
-    bondinfo = BondInfo(t)
-    bondinfo.setManager(getManager(code))
-    print(bondinfo)
+    bonds_dict = {}
+    for sub in bonds_list:
+        one_bond = sub.split(',')
+        code = one_bond[0]
+        bondinfo = BondInfo(sub)
+        bondinfo.setManager(getManager(code))
+        # bonds_dict[code] = bondinfo
+        print(bondinfo)
 
 
