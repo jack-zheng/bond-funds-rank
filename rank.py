@@ -111,10 +111,10 @@ def getBondsList(count):
     6：日增长，7：近一周，8：近一个月，9：近三个月，10：近六个月
     ------
     35.7922,42.5302,47.3382,-0.0589,47.9570,2016-11-22,
-    11：近一年，12：近两年，13：近三年，14：今年来，15：成立来，16：自定义，17：成立时间
+    11：近一年，12：近两年，13：近三年，14：今年来，15：成立来，16：成立时间
     ------
     1,35.8599,0.80%,0.08%,1,0.08%,1,"
-    18：?, 19:看着像是估值，20：手续费，21：折后，22：打折，23，24貌似和前两个重复的
+    17：?, 18:看着像是估值，19：手续费，20：折后，21：打折，22，23貌似和前两个重复的
 
     eval(str) 把 str 转成 list
     '''
@@ -126,33 +126,67 @@ class BondInfo:
     def __init__(self, infostr):
         info = infostr.split(',')
         self.originstr = infostr
-        self.id = info[0]
+        self.code = info[0]
         self.name = info[1]
         self.earn3YTotal = info[13]
         self.earn2YTotal = info[12]
         self.earn1YTotal = info[11]
-        self.established = info[15]
+        self.established = info[16]
     
     def setManager(self, manager):
         self.manager = manager
+
+    def getEarnLastYear(self):
+        return float(self.earn1YTotal)
+
+    def getEarn2YearsAgo(self):
+        return '%.3f' % (float(self.earn2YTotal) - float(self.earn1YTotal))
+
+    def getEarn3YearsAgo(self):
+        return '%.3f' % (float(self.earn3YTotal) - float(self.earn2YTotal))
+
+    def getEstablishedDate(self):
+        start = datetime.strptime(self.established, '%Y-%m-%d')
+        days = (datetime.now() - start).days
+        return "%s年%s天" % (int(days/365), days%365)
 
     def __str__(self):
         return "Code: %s, name: %s, [1-3] earn/year: [%s, %s, %s], %s" % (self.id, self.name, self.earn1YTotal, self.earn2YTotal, self.earn3YTotal, self.manager)
 
 
 if __name__ == '__main__':
-    bonds_list = getBondsList(5)
+    bonds_list = getBondsList(100)
 
     # 把 list 信息拆解成 id - info 的 dict 对象
-    bonds_dict = {}
+    table_data = []
     for sub in bonds_list:
-        one_bond = sub.split(',')
-        code = one_bond[0]
+        tmp = []
         bondinfo = BondInfo(sub)
-        bondinfo.setManager(getManager(code))
-        # bonds_dict[code] = bondinfo
-        print(bondinfo)
 
-    tableHeader = ['Code', '名称']
+        # 如果任职时间小于 3 年，剔除
+        managerinfo = getManager(bondinfo.code)
+        if managerinfo.getWorkTime().days - 3*365 < 0:
+            continue
+
+        tmp.append(bondinfo.code)
+        tmp.append(bondinfo.name)
+        tmp.append(bondinfo.getEstablishedDate())
+        tmp.append(bondinfo.earn3YTotal)
+        tmp.append(bondinfo.getEarnLastYear())
+        tmp.append(bondinfo.getEarn2YearsAgo())
+        tmp.append(bondinfo.getEarn3YearsAgo())
+
+        managerinfo = getManager(bondinfo.code)
+        tmp.append(managerinfo.name)
+        tmp.append(managerinfo.workTime)
+        tmp.append(managerinfo.termEarn)
+        table_data.append(tmp)
+
+    tableHeader = ['Code', '名称', '成立时间', '近三年收益(%)', '去年收益(%)', '前年收益(%)', '大前年收益(%)', '经理', '任期', '任期收益']
+    table_data.insert(0, tableHeader)
+
+    table = AsciiTable(table_data)
+    print(table.table)
+
 
 

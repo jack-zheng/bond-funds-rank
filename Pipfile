@@ -4,6 +4,7 @@ url = "https://pypi.douban.com/simple"
 name = "pypi"
 
 [dev-packages]
+ipython = "*"
 
 [packages]
 requests = "*"

@@ -22,6 +22,7 @@ pipenv lock - 生成版本文件
 pipenv install --ignore-pipfile - 通过lock file 安装依赖
 pipenv graph - 查看依赖
 pipenv graph --reverse - 回滚
+pipenv sync - 同步安装 lock 文件中的依赖
 ```
 
 requests: 用于发送 http reqeust
@@ -78,12 +79,21 @@ SyntaxError: Non-ASCII character '\xe4' in file rank.py on line 9, but no encodi
 
 使用正则匹配时默认使用的是贪婪模式，在匹配时添加 ? 比如： `\w+?` 就会把匹配转化成非贪婪模式
 
+WSL 使用 pipenv shell 时抛错
+
+```txt
+OSError: [Errno 8] Exec format error: '/mnt/c/Users/lanmo/AppData/Local/Microsoft/WindowsApps/python.exe'
+```
+
+这是因为 windows 环境下安装的的python 版本要优先于 WSL。通过 WSL 本地安装 pipfile 对应版本的 python 然后 `pipenv --python /usr/bin/python3` 问题解决
+
 ## 参考资料
 
 * [pipenv guide](https://realpython.com/pipenv-guide/)
 
 ## 进度记录
 
+day5: 1.5 hours, 基本完成打印功能，下次增加更具体的删选条件，比如剔除任期收益低于 18% 的品种
 day4: 1 hours, 完成基本功能，剩下的就是如何让他更友好
 day3: 1.5 hours, 基本整合完基金经理信息，但是代码结构需要再调整一下
 day2: 1.5 hours, 删选基金信息
