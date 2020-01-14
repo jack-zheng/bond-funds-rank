@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*
 import re
 import requests
+from terminaltables import AsciiTable
 from datetime import datetime, timedelta
 
 '''
@@ -151,5 +152,7 @@ if __name__ == '__main__':
         bondinfo.setManager(getManager(code))
         # bonds_dict[code] = bondinfo
         print(bondinfo)
+
+    tableHeader = ['Code', '名称']
 
 

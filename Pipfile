@@ -1,0 +1,13 @@
+[[source]]
+verify_ssl = true
+url = "https://pypi.douban.com/simple" 
+name = "pypi"
+
+[dev-packages]
+
+[packages]
+requests = "*"
+terminaltables = "*"
+
+[requires]
+python_version = "3.7"

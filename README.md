@@ -1,4 +1,5 @@
 # bond-funds-rank
+
 分析天天基金网债券基金数据，选择符合自己预期的投资标的
 
 ## 预期功能
@@ -8,6 +9,24 @@
 1. 要有 report
 1. 通过 pipy release，熟悉一下流程
 1. 可以的话试下加权计算得分
+
+## 工作环境搭建
+
+pipenv: 用于创建一个独立的开发环境，避免和本地版本冲突 `pip3 install pipenv`
+
+```bash
+pipenv shell - 创建环境
+pipenv install xxx - 安装包
+pipenv install pytest --dev - 安装开发包
+pipenv lock - 生成版本文件
+pipenv install --ignore-pipfile - 通过lock file 安装依赖
+pipenv graph - 查看依赖
+pipenv graph --reverse - 回滚
+```
+
+requests: 用于发送 http reqeust
+
+terminaltables: 格式化输出结果
 
 ### Step 1
 
@@ -58,6 +77,10 @@ SyntaxError: Non-ASCII character '\xe4' in file rank.py on line 9, but no encodi
 在文件头部追加 `# -*- coding: utf-8 -*` 指定编码
 
 使用正则匹配时默认使用的是贪婪模式，在匹配时添加 ? 比如： `\w+?` 就会把匹配转化成非贪婪模式
+
+## 参考资料
+
+* [pipenv guide](https://realpython.com/pipenv-guide/)
 
 ## 进度记录
 
