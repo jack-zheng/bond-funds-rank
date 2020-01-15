@@ -93,6 +93,7 @@ OSError: [Errno 8] Exec format error: '/mnt/c/Users/lanmo/AppData/Local/Microsof
 
 ## 进度记录
 
+day6: 1 hours, 基本完成基金删选，发现一个问题，xx.js 页面返回的数据上，基金经理的任职期限有几个不对，改成从页面去拿会更准确
 day5: 1.5 hours, 基本完成打印功能，下次增加更具体的删选条件，比如剔除任期收益低于 18% 的品种
 day4: 1 hours, 完成基本功能，剩下的就是如何让他更友好
 day3: 1.5 hours, 基本整合完基金经理信息，但是代码结构需要再调整一下
