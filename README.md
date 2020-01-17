@@ -93,6 +93,7 @@ OSError: [Errno 8] Exec format error: '/mnt/c/Users/lanmo/AppData/Local/Microsof
 
 ## 进度记录
 
+day7: 1.5 hours, 重构了代码，使用html页面的数据，更准确，以后有时间可以试试 scrapy，多线程拉数据，100+ 的 request 本地有点慢
 day6: 1 hours, 基本完成基金删选，发现一个问题，xx.js 页面返回的数据上，基金经理的任职期限有几个不对，改成从页面去拿会更准确
 day5: 1.5 hours, 基本完成打印功能，下次增加更具体的删选条件，比如剔除任期收益低于 18% 的品种
 day4: 1 hours, 完成基本功能，剩下的就是如何让他更友好

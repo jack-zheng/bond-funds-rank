@@ -1,36 +1,39 @@
 # -*- coding: utf-8 -*
 import re
 import requests
+from bs4 import BeautifulSoup
 from terminaltables import AsciiTable
 from datetime import datetime, timedelta
 
 '''
 为了便于管理，对象属性中只存放 request 解析出来的原始值，再方法中进行类型转化，返回处理数据
 '''
-
+#ret = soup.find_all('div', class_='box') 
+# ret[0].tbody.contents
 def _requestManager(code):
     '''
-    替换下面 URL 里面的基金代码部分可以得到对应的基金经理的数据
-    http://fund.eastmoney.com/pingzhongdata/206018.js
+    替换下面 URL 里面的基金代码部分可以得到对应的基金经理的数据, 使用 BeautifulSoup 提取所需要的经理数据, 类似 xpath 的思路
+    http://fundf10.eastmoney.com/jjjl_206018.html
 
-    数据部分样本：
-    var Data_currentFundManager =[{"id":"30282133","pic":"https://pdf.dfcfw.com/pdf/H8_JPG30282133_1.jpg","name":"祝松","star":3,"workTime":"5年又322天","fundSize":"205.00亿(9只基金)","power":{"avr":"58.97","categories":["经验值","收益率","抗风险","稳定性","管理规模"],"dsc":["反映基金经理从业年限和管理基金的经验","根据基金经理投资的阶段收益评分，反映\u003cbr\u003e基金经理投资的盈利能力","反映基金经理投资的回撤控制能力","反映基金经理投资收益的波动","根据基金经理现任管理基金资产规模评分"],"data":[77.10,64.40,46.60,33.40,89.0],"jzrq":"2020-01-08"},"profit":{"categories":["任期收益","同类平均"],"series":[{"data":[{"name":null,"color":"#7cb5ec","y":61.0114},{"name":null,"color":"#414c7b","y":49.15}]}],"jzrq":"2020-01-08"}}] ;
-
-    需要收集的数据有：姓名，任职时长，总共管理资产额度，任期收益，同类平均收益
+    需要收集的数据有：姓名，任职时长，任期收益，同类平均收益，根据目前的需求，只拿当前经理的信息，历史数据暂且忽略
 
     @param code:
         bond code
     return:
         the manager object of this bond
     '''
-    bond_detail = requests.get('http://fund.eastmoney.com/pingzhongdata/{}.js'.format(code))
+    html_text = requests.get('http://fundf10.eastmoney.com/jjjl_{}.html'.format(code)).text
 
-    manager_reg = r'Data_currentFundManager =(\[.+?}}\])'
-    managerstr = (re.search(manager_reg, bond_detail.text)).group(1)
+    html = BeautifulSoup(html_text, 'html.parser')
+    current_mrg = html.find('div', class_='box').find('tbody').find('tr').contents
 
-    # 任期收益 和 同类平均收益 的数据中有 "name":null 的类型，把 null 替换掉，不然转化会抛错
-    managerstr = managerstr.replace('null', '\"undefined\"')
-    manager_dict = eval(managerstr)[0]
+    manager_dict = {}
+    manager_dict['name'] = current_mrg[2].text.strip()
+    manager_dict['workTime'] = current_mrg[3].text.strip()
+    manager_dict['termEarn'] = current_mrg[4].text.strip().replace('%','')
+
+    size_txt = html.find('div', class_='bs_gl').find_all('label')[-1].text
+    manager_dict['fundSize'] = re.search('\d+[.]\d+', size_txt).group()
 
     return manager_dict
 
@@ -40,9 +43,8 @@ class Manager:
         mgr_dict = _requestManager(code)
         self.name = mgr_dict['name']
         self.workTime = mgr_dict['workTime']
+        self.termEarn = mgr_dict['termEarn']
         self.fundSize = mgr_dict['fundSize']
-        self.termEarn = mgr_dict['profit']['series'][0]['data'][0]['y']
-        self.fundAvg = mgr_dict['profit']['series'][0]['data'][1]['y']
 
     def getWorkTime(self):
         yearMatched = re.search(r'(\w+)年', self.workTime)
@@ -56,7 +58,7 @@ class Manager:
 
 
     def __str__(self):
-        return "Manager: %s, work time: %s, fond size: %s, term earn: %s, fund avg: %s" % (self.name, self.workTime, self.fundSize, self.termEarn, self.fundAvg)
+        return "Manager: %s, work time: %s, term earn: %s" % (self.name, self.workTime, self.termEarn)
 
 
 def filterFund(manager):
@@ -164,6 +166,9 @@ class BondInfo:
         days = (datetime.now() - start).days
         return "%s年%s天" % (int(days/365), days%365)
 
+    def getEarn3YearsAvg(self):
+        return '%.3f' % (float(self.earn3YTotal)/3)
+
     def __str__(self):
         return "Code: %s, name: %s, [1-3] earn/year: [%s, %s, %s], %s" % (self.id, self.name, self.earn1YTotal, self.earn2YTotal, self.earn3YTotal, self.manager)
 
@@ -182,11 +187,15 @@ def transferInfoToList(bondInfo, manager):
     # set manager info
     tmp.append(manager.name)
     tmp.append(manager.workTime)
+
+    tmp.append(bondInfo.getEarn3YearsAvg())
+
     tmp.append(manager.getTermAvgPerYear())
+    tmp.append(manager.fundSize)
     return tmp
 
 if __name__ == '__main__':
-    bonds_list = getBondsList(10)
+    bonds_list = getBondsList(100)
 
     # 把 list 信息拆解成 id - info 的 dict 对象
     table_data = []
@@ -200,7 +209,7 @@ if __name__ == '__main__':
         row = transferInfoToList(bondinfo, manager)
         table_data.append(row)
 
-    tableHeader = ['Code', '名称', '成立时间', '近三年收益(%)', '去年收益(%)', '前年收益(%)', '大前年收益(%)', '经理', '任期', '任期平均收益(年)']
+    tableHeader = ['Code', '名称', '成立时间', '近三年收益(%)', '去年收益(%)', '前年收益(%)', '大前年收益(%)', '经理', '任期', '年均收益(3年)', '年均收益(总)', '规模(亿)']
     table_data.insert(0, tableHeader)
 
     table = AsciiTable(table_data)
