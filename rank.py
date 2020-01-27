@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*
 import re
+import argparse
 import requests
 from bs4 import BeautifulSoup
+from bar import SimpleProgressBar
 from terminaltables import AsciiTable
 from datetime import datetime, timedelta
 
@@ -195,13 +197,28 @@ def transferInfoToList(bondInfo, manager):
     return tmp
 
 if __name__ == '__main__':
-    bonds_list = getBondsList(100)
+    parser = argparse.ArgumentParser(prog='funds-rank', description='Show rank result of bond funds.')
+    parser.add_argument('-n', default=100, type=int, help='candidate funnds count, default is 100.')
+    args = parser.parse_args()
+    bar = SimpleProgressBar(args.n)
+    bar.update_current_steps(1)
+    bar.update()
+    
+    bonds_list = getBondsList(args.n)
+    bar.current_steps += 1
+    bar.status = "Requesting..."
+    bar.update()
 
     # 把 list 信息拆解成 id - info 的 dict 对象
     table_data = []
     for sub in bonds_list:
         bondinfo = BondInfo(sub)
         manager = Manager(bondinfo.code)
+        # 每完成一次信息获取，进度条 +1
+        bar.current_steps += 1
+        bar.status = "Requesting..."
+        bar.update()
+
         # filter funds
         if filterFund(manager):
             continue
@@ -209,11 +226,18 @@ if __name__ == '__main__':
         row = transferInfoToList(bondinfo, manager)
         table_data.append(row)
 
-    tableHeader = ['Code', '名称', '成立时间', '近三年收益(%)', '去年收益(%)', '前年收益(%)', '大前年收益(%)', '经理', '任期', '年均收益(3年)', '年均收益(总)', '规模(亿)']
+    tableHeader = ['Code', '名称', '成立时间', '近三年收益(%)', '去年(%)', '前年(%)', '大前年(%)', '经理', '任期', '年均收益(3年)', '年均收益(总)', '规模(亿)']
     table_data.insert(0, tableHeader)
+
+    # 完成数据组装，进度条拉满
+    bar.current_steps += 1
+    bar.status = "Done..."
+    bar.update()
+    bar.done()
 
     table = AsciiTable(table_data)
     print(table.table)
+
 
 
 

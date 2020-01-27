@@ -2,13 +2,25 @@
 
 分析天天基金网债券基金数据，选择符合自己预期的投资标的
 
+进度条做完之后就没有动力做了，看了一个简单的开源项目 you-get 作为参考。总的来说，有所得！
+
 ## 预期功能
 
-1. 显示债券基金 rank 前 100 的数据信息
-1. eprogress 显示爬取进度
-1. 要有 report
-1. 通过 pipy release，熟悉一下流程
-1. 可以的话试下加权计算得分
+- [x] 显示债券基金 rank 前 100 的数据信息
+- [ ] flag 控制是否要显示所有基金的删选情况
+- [x] 显示爬取进度 (可以参考下you-get项目，或者用第三方包)
+- [ ] 要有 report (想试一下那个 xkcd 手绘风的图标工具)
+- [ ] 通过 pipy release，熟悉一下流程
+- [ ] 可以的话试下加权计算得分
+
+## 使用
+
+funds-rank:
+  显示删选出来的基金信息
+
+成果展示：
+
+![result](images/rank_result.png)
 
 ## 工作环境搭建
 
@@ -67,7 +79,7 @@ http://fund.eastmoney.com/pingzhongdata/206018.js
 
 ## Issue Log
 
-运行脚本的时候抛错
+- 运行脚本的时候抛错
 
 ```txt
 jack@DESKTOP-9TGTFK1:~/gitStore/bond-funds-rank$ python rank.py
@@ -77,9 +89,9 @@ SyntaxError: Non-ASCII character '\xe4' in file rank.py on line 9, but no encodi
 
 在文件头部追加 `# -*- coding: utf-8 -*` 指定编码
 
-使用正则匹配时默认使用的是贪婪模式，在匹配时添加 ? 比如： `\w+?` 就会把匹配转化成非贪婪模式
+- 使用正则匹配时默认使用的是贪婪模式，在匹配时添加 ? 比如： `\w+?` 就会把匹配转化成非贪婪模式
 
-WSL 使用 pipenv shell 时抛错
+- WSL 使用 pipenv shell 时抛错
 
 ```txt
 OSError: [Errno 8] Exec format error: '/mnt/c/Users/lanmo/AppData/Local/Microsoft/WindowsApps/python.exe'
@@ -89,14 +101,23 @@ OSError: [Errno 8] Exec format error: '/mnt/c/Users/lanmo/AppData/Local/Microsof
 
 ## 参考资料
 
-* [pipenv guide](https://realpython.com/pipenv-guide/)
+- [pipenv guide](https://realpython.com/pipenv-guide/)
+- [VSCode Debug Python](https://code.visualstudio.com/docs/python/python-tutorial#_configure-and-run-the-debugger)
 
 ## 进度记录
 
+day8: 3 hours, 整和 you-get 项目的进度条功能，然后这个项目太监了。。。(´▽｀)
+
 day7: 1.5 hours, 重构了代码，使用html页面的数据，更准确，以后有时间可以试试 scrapy，多线程拉数据，100+ 的 request 本地有点慢
+
 day6: 1 hours, 基本完成基金删选，发现一个问题，xx.js 页面返回的数据上，基金经理的任职期限有几个不对，改成从页面去拿会更准确
+
 day5: 1.5 hours, 基本完成打印功能，下次增加更具体的删选条件，比如剔除任期收益低于 18% 的品种
+
 day4: 1 hours, 完成基本功能，剩下的就是如何让他更友好
+
 day3: 1.5 hours, 基本整合完基金经理信息，但是代码结构需要再调整一下
+
 day2: 1.5 hours, 删选基金信息
+
 day1: 2 hours, setup env, 完成部分信息爬取
